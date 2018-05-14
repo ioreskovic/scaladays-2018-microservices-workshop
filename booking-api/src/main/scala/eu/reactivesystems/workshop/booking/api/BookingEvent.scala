@@ -13,6 +13,12 @@ sealed trait BookingEvent {
 }
 
 case class BookingCreated(listingId: UUID) extends BookingEvent
+case class BookingCancelled(listingId: UUID) extends BookingEvent
+case class BookingConfirmed(listingId: UUID) extends BookingEvent
+case class BookingRejected(listingId: UUID) extends BookingEvent
+case class BookingWithdrawn(listingId: UUID) extends BookingEvent
+case class BookingModified(listingId: UUID) extends BookingEvent
+
 
 object BookingCreated {
   implicit val format: Format[BookingCreated] = Json.format

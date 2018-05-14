@@ -1,6 +1,11 @@
 package eu.reactivesystems.workshop.booking.impl
 
+import java.util.UUID
+
+import akka.Done
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, AggregateEventTagger, PersistentEntity}
+import eu.reactivesystems.workshop.booking.api.{BookingRequest, RoomListed}
 import eu.reactivesystems.workshop.jsonformats.JsonFormats._
 import play.api.libs.json.{Format, Json}
 
@@ -16,13 +21,18 @@ class BookingRegister extends PersistentEntity {
 
 
   override def behavior: Behavior = {
-    case BookingRegisterState(BookingRegisterStatus.NotCreated) => notCreated
+    case BookingRegisterState(BookingRegisterStatus.NotCreated) => unlisted
   }
 
   /**
     * Behavior for the not created state.
     */
-  private def notCreated = Actions.empty
+  private def unlisted = Actions().onCommand[ListRoom.type, Done] {
+    case (ListRoom, ctx, state) => {
+      ctx.thenPersist(RoomListed())
+      ctx.done
+    }
+  }
 
 }
 
@@ -49,8 +59,16 @@ object BookingRegisterStatus extends Enumeration {
 /**
   * A command.
   */
-trait BookingRegisterCommand
+sealed trait BookingRegisterCommand
 
+case class RequestBooking(request: BookingRequest) extends BookingRegisterCommand with ReplyType[UUID]
+case class CancelBooking(bookingId: UUID) extends BookingRegisterCommand with ReplyType[Done]
+case class ConfirmBooking(bookingId: UUID) extends BookingRegisterCommand with ReplyType[Done]
+case class RejectBooking(bookingId: UUID) extends BookingRegisterCommand with ReplyType[Done]
+case class WithdrawBooking(bookingId: UUID) extends BookingRegisterCommand with ReplyType[Done]
+case class ModifyBooking(bookingId: UUID, request: BookingRequest) extends BookingRegisterCommand with ReplyType[Done]
+case object UnlistRoom extends BookingRegisterCommand with ReplyType[Done]
+case object ListRoom extends BookingRegisterCommand with ReplyType[Done]
 
 /**
   * A persisted event.
