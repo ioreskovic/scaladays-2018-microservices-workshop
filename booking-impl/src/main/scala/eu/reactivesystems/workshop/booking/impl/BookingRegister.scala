@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, AggregateEventTagger, PersistentEntity}
-import eu.reactivesystems.workshop.booking.api.{BookingRequest, RoomListed}
+import eu.reactivesystems.workshop.booking.api.{BookingRequest}
 import eu.reactivesystems.workshop.jsonformats.JsonFormats._
 import play.api.libs.json.{Format, Json}
 
@@ -29,8 +29,7 @@ class BookingRegister extends PersistentEntity {
     */
   private def unlisted = Actions().onCommand[ListRoom.type, Done] {
     case (ListRoom, ctx, state) => {
-      ctx.thenPersist(RoomListed())
-      ctx.done
+      ctx.thenPersist(RoomListed)(event => ctx.reply(Done))
     }
   }
 
@@ -76,6 +75,8 @@ case object ListRoom extends BookingRegisterCommand with ReplyType[Done]
 trait BookingRegisterEvent extends AggregateEvent[BookingRegisterEvent] {
   override def aggregateTag: AggregateEventTagger[BookingRegisterEvent] = BookingRegisterEvent.Tag
 }
+
+case object RoomListed extends BookingRegisterEvent
 
 object BookingRegisterEvent {
   val Tag = AggregateEventTag[BookingRegisterEvent]
