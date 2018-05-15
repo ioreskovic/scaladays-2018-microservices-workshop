@@ -16,6 +16,9 @@ version in ThisBuild := "1.0.0-SNAPSHOT"
 val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "4.0.0"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+val kryo = "com.github.romix.akka" %% "akka-kryo-serialization" % "0.5.1"
+
+
 
 lazy val jsonformats = (project in file("json-formats"))
   .settings(commonSettings: _*)
@@ -72,7 +75,8 @@ lazy val bookingImpl = (project in file("booking-impl"))
       lagomScaladslTestKit,
       lagomScaladslKafkaBroker,
       macwire,
-      scalaTest
+      scalaTest,
+      kryo
     )
   )
 
